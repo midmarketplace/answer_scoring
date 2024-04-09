@@ -110,12 +110,12 @@ file_path = "lech201.pdf"
 
 if paths:
     for path in paths:
-        qa = bookqabot(path)
         if st.button("Grade"):
+            qa = bookqabot(path)
             grade = generate_grade(question, answer, qa)
             st.markdown(grade)
 else:
-    qa = bookqabot(file_path)
     if st.button("Grade"):
+        qa = bookqabot(file_path)
         grade = generate_grade(question, answer, qa)
         st.markdown(grade)
