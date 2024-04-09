@@ -6,7 +6,7 @@ import shutil
 from PIL import Image
 
 st.set_page_config(
-    page_title="Lyzr Game Generator",
+    page_title="Answer Scoring Agent",
     layout="centered",  # or "wide"
     initial_sidebar_state="auto",
     page_icon="lyzr-logo-cut.png",
@@ -27,9 +27,10 @@ image = Image.open("lyzr-logo.png")
 st.image(image, width=150)
 
 # App title and introduction
-st.title("Lyzr Answer Scoring Agent")
+st.title("Lyzr Answer Scoring Agent📖")
 st.markdown("### Welcome to the Lyzr Answer Scoring Agent!")
-st.markdown("Upload Text book or use a sample Chemistry book")
+st.sidebar.markdown("Upload Text book or use a sample Chemistry book")
+st.sidebar.markdown("Sample text book contains Topics : Haloalkanes and Haloarenes")
 
 def remove_existing_files(directory):
     for filename in os.listdir(directory):
@@ -47,7 +48,8 @@ data_directory = "data"
 os.makedirs(data_directory, exist_ok=True)
 remove_existing_files(data_directory)
 
-uploaded_file = st.file_uploader("Choose PDF file", type=["pdf"])
+uploaded_file = st.sidebar.file_uploader("Choose PDF file", type=["pdf"])
+default = st.sidebar.button("Use Default")
 
 if uploaded_file is not None:
     # Save the uploaded PDF file to the data directory
@@ -78,8 +80,7 @@ def bookqabot(file_path):
         input_files=[file_path],
     )
 
-    response = qa_bot.chat(question)
-    return response.response
+    return qa_bot
 
 
 def generate_grade(question, answer, ref_answer):
@@ -102,20 +103,28 @@ def generate_grade(question, answer, ref_answer):
                         llm_model="gpt-4-turbo-preview")
     return grade
 
+def combine_answer(question,answer,qa):
+    qa_res = qa.chat(question)
+    grade = generate_grade(question, answer, qa_res)
+    st.markdown(grade)
 
 paths = get_all_files(data_directory)
-question = st.text_input("Enter your question: ")
-answer = st.text_area("Enter Your Answer: ")
+
 file_path = "lech201.pdf"
 
 if paths:
     for path in paths:
+        qa = bookqabot(path)
+        question = st.text_input("Enter your question: ")
+        answer = st.text_area("Enter Your Answer: ")
         if st.button("Grade"):
-            qa = bookqabot(path)
-            grade = generate_grade(question, answer, qa)
-            st.markdown(grade)
+            combine_answer(question,answer,qa)
 else:
-    if st.button("Grade"):
+    if st.session_state.get('button') != True:
+        st.session_state['button'] = default
+    if st.session_state['button'] == True:
         qa = bookqabot(file_path)
-        grade = generate_grade(question, answer, qa)
-        st.markdown(grade)
+        question = st.text_input("Enter your question: ")
+        answer = st.text_area("Enter Your Answer: ")
+        if st.button("Grade"):
+            combine_answer(question,answer,qa)
