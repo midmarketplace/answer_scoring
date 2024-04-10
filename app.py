@@ -5,6 +5,7 @@ from utils.llm_calling import llm_calling
 import shutil
 from PIL import Image
 
+
 st.set_page_config(
     page_title="Answer Scoring Agent",
     layout="centered",  # or "wide"
@@ -103,7 +104,8 @@ def generate_grade(question, answer, ref_answer):
                         llm_model="gpt-4-turbo-preview")
     return grade
 
-def combine_answer(question,answer,qa):
+
+def combine_answer(question, answer, qa):
     qa_res = qa.chat(question)
     grade = generate_grade(question, answer, qa_res)
     st.markdown(grade)
